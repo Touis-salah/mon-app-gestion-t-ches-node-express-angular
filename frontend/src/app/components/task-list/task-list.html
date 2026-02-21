@@ -1,0 +1,645 @@
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-6 sm:py-10 px-3 sm:px-6">
+
+  <div class="w-full max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-4 sm:p-8">
+
+    <!-- Title -->
+    <h1 class="text-2xl sm:text-3xl font-extrabold text-center text-gray-800 mb-6 sm:mb-8">
+      📋 Gestion des Tâches
+    </h1>
+
+    <!-- FORMULAIRE RESPONSIVE -->
+    <div class="flex flex-col gap-3 sm:grid sm:grid-cols-3 sm:gap-4 mb-6 sm:mb-8">
+      <input [(ngModel)]="newTask.title" placeholder="Titre" class="p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none w-full"/>
+      <input [(ngModel)]="newTask.description" placeholder="Description" class="p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none w-full"/>
+      <button (click)="addTask()" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-green-500 text-green-500 hover:text-white border-2 border-green-500 rounded-xl font-semibold shadow-sm hover:shadow-md transition">
+        Ajouter
+      </button>
+    </div>
+
+    <!-- LISTE DES TÂCHES -->
+    <ul class="divide-y divide-gray-200">
+      @for (task of paginatedTasks; track task.id) {
+      <li class="py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+
+        <!-- Partie gauche : checkbox + titre + description -->
+        <div class="flex items-start gap-3 flex-1 min-w-0">
+          <input type="checkbox" [checked]="task.completed" (change)="toggleCompleted(task)" class="mt-1 w-5 h-5 accent-blue-600 shrink-0"/>
+          <div class="flex-1 min-w-0">
+            <h3 [class.line-through]="task.completed" [class.text-gray-400]="task.completed" class="font-semibold text-base sm:text-lg text-gray-800 break-words">
+      {{ task.title }}
+      </h3>
+      <p class="text-gray-500 text-sm mt-1 break-words">{{ task.description }}</p>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center gap-2">
+          <!-- DELETE -->
+          <button (click)="deleteTask(task.id)" class="flex items-center justify-center w-10 h-10 bg-white hover:bg-red-500 text-red-500 hover:text-white border-2 border-red-500 rounded-full shadow-sm hover:shadow-md transition">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 7h12M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m-7 0v12m4-12v12M5 7h14l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 7z"/>
+            </svg>
+          </button>
+
+          <!-- EDIT -->
+          <button (click)="editTask(task)" class="flex items-center justify-center w-10 h-10 bg-white hover:bg-blue-500 text-blue-500 hover:text-white border-2 border-blue-500 rounded-full shadow-sm hover:shadow-md transition">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 3.487a2.1 2.1 0 113 3L7.5 18.85 3 20l1.15-4.5 12.712-12.013z"/>
+            </svg>
+          </button>
+
+          <!-- INFO -->
+          <button (click)="showTaskInfo(task)" class="flex items-center justify-center w-10 h-10 bg-white hover:bg-blue-500 text-blue-500 hover:text-white border-2 border-blue-500 rounded-full shadow-sm hover:shadow-md transition">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 9h1.5m-1.5 3h1.5m-.75-9a9 9 0 100 18 9 9 0 000-18z"/>
+            </svg>
+          </button>
+        </div>
+      </li>
+      }
+      @empty {
+      <li class="text-center text-gray-400 py-8">✨ Aucune tâche pour le moment.</li>
+      }
+    </ul>
+
+    <!-- PAGINATION RESPONSIVE -->
+    <div *ngIf="totalPages > 1" class="flex justify-center mt-8 sm:mt-10">
+      <nav class="flex flex-wrap items-center justify-center gap-2 bg-gray-100 rounded-full p-2 shadow-inner">
+        <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1" class="px-3 sm:px-4 py-2 rounded-full text-sm font-medium disabled:opacity-40 hover:bg-white transition">←</button>
+        @for (page of pages; track page) {
+        <button (click)="changePage(page)" [class.bg-blue-600]="currentPage === page" [class.text-white]="currentPage === page" class="px-3 sm:px-4 py-2 rounded-full text-sm font-semibold transition hover:bg-white">{{ page }}</button>
+        }
+        <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages" class="px-3 sm:px-4 py-2 rounded-full text-sm font-medium disabled:opacity-40 hover:bg-white transition">→</button>
+      </nav>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL CONFIRM DELETE -->
+<div *ngIf="showConfirmModal" class="fixed inset-0 flex items-center justify-center z-50">
+  <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm transition-opacity"></div>
+  <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-sm w-full mx-4 relative z-10 animate-fade-in">
+    <div class="flex justify-center mb-4">
+      <svg class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M5.07 19h13.86a2 2 0 002-2V7a2 2 0 00-2-2H5.07a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+      </svg>
+    </div>
+    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 text-center mb-2">Confirmer la suppression</h2>
+    <p class="text-gray-600 text-center mb-6">Êtes-vous sûr de vouloir supprimer cette tâche ? Cette action est irréversible!</p>
+    <div class="flex justify-center gap-4">
+      <button (click)="cancelDelete()" class="px-4 py-2 sm:px-5 sm:py-3 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-100 font-semibold shadow-sm hover:shadow-md w-full sm:w-auto">NON</button>
+      <button (click)="confirmDelete()" class="px-4 py-2 sm:px-5 sm:py-3 rounded-lg bg-red-500 text-white hover:bg-red-600 shadow-md hover:shadow-lg font-semibold flex items-center gap-2 w-full sm:w-auto">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 7h12M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m-7 0v12m4-12v12M5 7h14l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 7z"/>
+        </svg>
+        OUI
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST NOTIFICATION -->
+<div *ngIf="showToast" class="fixed top-5 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 animate-fade-in-out z-50">
+  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+  </svg>
+  <span>{{ toastMessage }}</span>
+</div>
+
+<!-- MODAL TASK INFO -->
+<div *ngIf="isInfoOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+  <div class="relative w-full max-w-md bg-white rounded-2xl shadow-xl p-6 space-y-5 animate-[fadeIn_.2s_ease-out]">
+    <div class="flex items-center justify-between border-b pb-3">
+      <h2 class="text-xl font-semibold text-gray-800">Task Details</h2>
+      <button (click)="closeInfo()" class="text-gray-400 hover:text-red-500 transition">✕</button>
+    </div>
+    <div class="space-y-3 text-sm">
+      <div class="grid grid-cols-3 gap-2">
+        <span class="font-medium text-gray-500">Title</span>
+        <span class="col-span-2 text-gray-800">{{ selectedTask?.title }}</span>
+      </div>
+      <div class="grid grid-cols-3 gap-2">
+        <span class="font-medium text-gray-500">Description</span>
+        <span class="col-span-2 text-gray-800">{{ selectedTask?.description }}</span>
+      </div>
+      <div class="grid grid-cols-3 gap-2">
+        <span class="font-medium text-gray-500">Status</span>
+        <span class="col-span-2">
+          <span class="px-2 py-1 rounded-full text-xs font-medium" [ngClass]="selectedTask?.completed ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'">
+            {{ selectedTask?.completed ? 'Terminée' : 'En cours' }}
+          </span>
+        </span>
+      </div>
+    </div>
+    <div class="flex justify-end pt-4 border-t">
+      <button (click)="closeInfo()" class="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium transition">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDIT TASK -->
+<div *ngIf="showEditModal" class="fixed inset-0 flex items-center justify-center z-50 px-4 sm:px-6">
+  <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm transition-opacity"></div>
+  <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-sm sm:max-w-md w-full relative z-10 animate-fade-in">
+    <div class="flex flex-col items-center mb-4">
+      <div class="w-12 h-12 flex items-center justify-center rounded-full bg-blue-100 mb-3">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 text-blue-500">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 3.487a2.1 2.1 0 113 3L7.5 18.85 3 20l1.15-4.5 12.712-12.013z"/>
+        </svg>
+      </div>
+      <h2 class="text-xl sm:text-2xl font-bold text-gray-800 text-center">Modifier la tâche</h2>
+    </div>
+    <div class="flex flex-col gap-3" *ngIf="taskBeingEdited">
+      <input [(ngModel)]="taskBeingEdited.title" placeholder="Titre" class="p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none w-full transition"/>
+      <textarea [(ngModel)]="taskBeingEdited.description" placeholder="Description" class="p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none w-full transition resize-none"></textarea>
+    </div>
+    <div class="flex justify-center gap-4 mt-6">
+      <button (click)="showEditModal=false" class="px-4 py-2 sm:px-5 sm:py-3 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-gray-100 font-semibold shadow-sm hover:shadow-md w-full sm:w-auto">Annuler</button>
+      <button (click)="confirmUpdate()" class="px-4 py-2 sm:px-5 sm:py-3 rounded-lg bg-blue-500 text-white hover:bg-blue-600 shadow-md hover:shadow-lg font-semibold flex items-center gap-2 w-full sm:w-auto">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+        </svg>
+        Sauvegarder
+      </button>
+    </div>
+  </div>
+</div>
+
+
+
+
+<!--<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-6 sm:py-10 px-3 sm:px-6">-->
+<!--  <div class="w-full max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-4 sm:p-8">-->
+
+<!--    &lt;!&ndash; Title &ndash;&gt;-->
+<!--    <h1 class="text-2xl sm:text-3xl font-extrabold text-center text-gray-800 mb-6 sm:mb-8">-->
+<!--      📋 Gestion des Tâches-->
+<!--    </h1>-->
+
+<!--    &lt;!&ndash; Formulaire &ndash;&gt;-->
+<!--    <div class="flex flex-col gap-3 sm:grid sm:grid-cols-3 sm:gap-4 mb-6 sm:mb-8">-->
+<!--      <input [(ngModel)]="newTask.title" placeholder="Titre" class="p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none w-full"/>-->
+<!--      <input [(ngModel)]="newTask.description" placeholder="Description" class="p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none w-full"/>-->
+<!--      <button (click)="addTask()" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-green-500 text-green-500 hover:text-white border-2 border-green-500 rounded-xl font-semibold shadow-sm hover:shadow-md transition">Ajouter</button>-->
+<!--    </div>-->
+
+<!--    &lt;!&ndash; Liste &ndash;&gt;-->
+<!--    <ul class="divide-y divide-gray-200">-->
+<!--      @for (task of paginatedTasks; track task.id) {-->
+<!--      <li class="py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">-->
+<!--        <div class="flex items-start gap-3 flex-1 min-w-0">-->
+<!--          <input type="checkbox" [checked]="task.completed" (change)="toggleCompleted(task)" class="mt-1 w-5 h-5 accent-blue-600 shrink-0"/>-->
+<!--          <div class="flex-1 min-w-0">-->
+<!--            <h3 [class.line-through]="task.completed" [class.text-gray-400]="task.completed" class="font-semibold text-base sm:text-lg text-gray-800 break-words">{{ task.title }}</h3>-->
+<!--            <p class="text-gray-500 text-sm mt-1 break-words">{{ task.description }}</p>-->
+<!--          </div>-->
+<!--        </div>-->
+
+<!--        &lt;!&ndash; Actions &ndash;&gt;-->
+<!--        <div class="flex items-center gap-2">-->
+<!--          <button (click)="deleteTask(task.id)" class="flex items-center justify-center w-10 h-10 bg-white hover:bg-red-500 text-red-500 hover:text-white border-2 border-red-500 rounded-full shadow-sm hover:shadow-md transition">-->
+<!--            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">-->
+<!--              <path stroke-linecap="round" stroke-linejoin="round" d="M6 7h12M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m-7 0v12m4-12v12M5 7h14l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 7z"/>-->
+<!--            </svg>-->
+<!--          </button>-->
+
+<!--          <button (click)="editTask(task)" class="flex items-center justify-center w-10 h-10 bg-white hover:bg-blue-500 text-blue-500 hover:text-white border-2 border-blue-500 rounded-full shadow-sm hover:shadow-md transition">-->
+<!--            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">-->
+<!--              <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 3.487a2.1 2.1 0 113 3L7.5 18.85 3 20l1.15-4.5 12.712-12.013z"/>-->
+<!--            </svg>-->
+<!--          </button>-->
+
+<!--          <button (click)="showTaskInfo(task)" class="flex items-center justify-center w-10 h-10 bg-white hover:bg-blue-500 text-blue-500 hover:text-white border-2 border-blue-500 rounded-full shadow-sm hover:shadow-md transition">-->
+<!--            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">-->
+<!--              <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 9h1.5m-1.5 3h1.5m-.75-9a9 9 0 100 18 9 9 0 000-18z"/>-->
+<!--            </svg>-->
+<!--          </button>-->
+<!--        </div>-->
+<!--      </li>-->
+<!--      }-->
+<!--      @empty {-->
+<!--      <li class="text-center text-gray-400 py-8">✨ Aucune tâche pour le moment.</li>-->
+<!--      }-->
+<!--    </ul>-->
+
+<!--    &lt;!&ndash; Pagination &ndash;&gt;-->
+<!--    <div *ngIf="totalPages > 1" class="flex justify-center mt-8 sm:mt-10">-->
+<!--      <nav class="flex flex-wrap items-center justify-center gap-2 bg-gray-100 rounded-full p-2 shadow-inner">-->
+<!--        <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1" class="px-3 sm:px-4 py-2 rounded-full text-sm font-medium disabled:opacity-40 hover:bg-white transition">←</button>-->
+<!--        @for (page of pages; track page) {-->
+<!--        <button (click)="changePage(page)" [class.bg-blue-600]="currentPage === page" [class.text-white]="currentPage === page" class="px-3 sm:px-4 py-2 rounded-full text-sm font-semibold transition hover:bg-white">{{ page }}</button>-->
+<!--        }-->
+<!--        <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages" class="px-3 sm:px-4 py-2 rounded-full text-sm font-medium disabled:opacity-40 hover:bg-white transition">→</button>-->
+<!--      </nav>-->
+<!--    </div>-->
+
+<!--  </div>-->
+<!--</div>-->
+
+
+
+
+
+
+<!--&lt;!&ndash;<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-6 sm:py-10 px-3 sm:px-6">&ndash;&gt;-->
+
+<!--&lt;!&ndash;  <div class="w-full max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-4 sm:p-8">&ndash;&gt;-->
+
+<!--&lt;!&ndash;    &lt;!&ndash; Title &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;    <h1 class="text-2xl sm:text-3xl font-extrabold text-center text-gray-800 mb-6 sm:mb-8">&ndash;&gt;-->
+<!--&lt;!&ndash;      📋 Gestion des Tâches&ndash;&gt;-->
+<!--&lt;!&ndash;    </h1>&ndash;&gt;-->
+
+<!--&lt;!&ndash;    &lt;!&ndash; FORMULAIRE RESPONSIVE &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;    <div class="flex flex-col gap-3 sm:grid sm:grid-cols-3 sm:gap-4 mb-6 sm:mb-8">&ndash;&gt;-->
+
+<!--&lt;!&ndash;      <input&ndash;&gt;-->
+<!--&lt;!&ndash;        [(ngModel)]="newTask.title"&ndash;&gt;-->
+<!--&lt;!&ndash;        placeholder="Titre"&ndash;&gt;-->
+<!--&lt;!&ndash;        class="p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none w-full"&ndash;&gt;-->
+<!--&lt;!&ndash;      />&ndash;&gt;-->
+
+<!--&lt;!&ndash;      <input&ndash;&gt;-->
+<!--&lt;!&ndash;        [(ngModel)]="newTask.description"&ndash;&gt;-->
+<!--&lt;!&ndash;        placeholder="Description"&ndash;&gt;-->
+<!--&lt;!&ndash;        class="p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none w-full"&ndash;&gt;-->
+<!--&lt;!&ndash;      />&ndash;&gt;-->
+
+<!--&lt;!&ndash;      <button&ndash;&gt;-->
+<!--&lt;!&ndash;        (click)="addTask()"&ndash;&gt;-->
+<!--&lt;!&ndash;        class="w-full sm:w-auto inline-flex items-center justify-center gap-2&ndash;&gt;-->
+<!--&lt;!&ndash;               px-4 py-2.5&ndash;&gt;-->
+<!--&lt;!&ndash;               bg-white hover:bg-green-500&ndash;&gt;-->
+<!--&lt;!&ndash;               text-green-500 hover:text-white&ndash;&gt;-->
+<!--&lt;!&ndash;               border-2 border-green-500&ndash;&gt;-->
+<!--&lt;!&ndash;               rounded-xl&ndash;&gt;-->
+<!--&lt;!&ndash;               font-semibold&ndash;&gt;-->
+<!--&lt;!&ndash;               shadow-sm hover:shadow-md&ndash;&gt;-->
+<!--&lt;!&ndash;               transition">&ndash;&gt;-->
+<!--&lt;!&ndash;        Ajouter&ndash;&gt;-->
+<!--&lt;!&ndash;      </button>&ndash;&gt;-->
+
+<!--&lt;!&ndash;    </div>&ndash;&gt;-->
+
+<!--&lt;!&ndash;    &lt;!&ndash; LISTE RESPONSIVE &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;    <ul class="divide-y divide-gray-200">&ndash;&gt;-->
+
+<!--&lt;!&ndash;      @for (task of paginatedTasks; track task.id) {&ndash;&gt;-->
+
+<!--&lt;!&ndash;      <li class="py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">&ndash;&gt;-->
+
+<!--&lt;!&ndash;        &lt;!&ndash; Partie gauche &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;        <div class="flex items-start gap-3 flex-1 min-w-0">&ndash;&gt;-->
+
+<!--&lt;!&ndash;          <input&ndash;&gt;-->
+<!--&lt;!&ndash;            type="checkbox"&ndash;&gt;-->
+<!--&lt;!&ndash;            [checked]="task.completed"&ndash;&gt;-->
+<!--&lt;!&ndash;            (change)="toggleCompleted(task)"&ndash;&gt;-->
+<!--&lt;!&ndash;            class="mt-1 w-5 h-5 accent-blue-600 shrink-0"&ndash;&gt;-->
+<!--&lt;!&ndash;          />&ndash;&gt;-->
+
+<!--&lt;!&ndash;          <div class="flex-1 min-w-0">&ndash;&gt;-->
+<!--&lt;!&ndash;            <h3&ndash;&gt;-->
+<!--&lt;!&ndash;              [class.line-through]="task.completed"&ndash;&gt;-->
+<!--&lt;!&ndash;              [class.text-gray-400]="task.completed"&ndash;&gt;-->
+<!--&lt;!&ndash;              class="font-semibold text-base sm:text-lg text-gray-800 break-words">&ndash;&gt;-->
+<!--&lt;!&ndash;      {{ task.title }}&ndash;&gt;-->
+<!--&lt;!&ndash;      </h3>&ndash;&gt;-->
+
+<!--&lt;!&ndash;      <p class="text-gray-500 text-sm mt-1 break-words">&ndash;&gt;-->
+<!--&lt;!&ndash;      {{ task.description }}&ndash;&gt;-->
+<!--&lt;!&ndash;      </p>&ndash;&gt;-->
+<!--&lt;!&ndash;    </div>&ndash;&gt;-->
+
+<!--&lt;!&ndash;  </div>&ndash;&gt;-->
+
+<!--&lt;!&ndash;  &lt;!&ndash; ACTIONS &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash; <div class="flex items-center gap-2">&ndash;&gt;-->
+
+<!--&lt;!&ndash;  &lt;!&ndash; DELETE &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash; <button&ndash;&gt;-->
+<!--&lt;!&ndash;  (click)="deleteTask(task.id)"&ndash;&gt;-->
+<!--&lt;!&ndash;  class="flex items-center justify-center&ndash;&gt;-->
+<!--&lt;!&ndash;         w-10 h-10&ndash;&gt;-->
+<!--&lt;!&ndash;         bg-white hover:bg-red-500&ndash;&gt;-->
+<!--&lt;!&ndash;         text-red-500 hover:text-white&ndash;&gt;-->
+<!--&lt;!&ndash;         border-2 border-red-500&ndash;&gt;-->
+<!--&lt;!&ndash;         rounded-full&ndash;&gt;-->
+<!--&lt;!&ndash;         shadow-sm hover:shadow-md&ndash;&gt;-->
+<!--&lt;!&ndash;         transition"&ndash;&gt;-->
+<!--&lt;!&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;  &lt;!&ndash; Trash icon &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;  <svg xmlns="http://www.w3.org/2000/svg"&ndash;&gt;-->
+<!--&lt;!&ndash;       fill="none"&ndash;&gt;-->
+<!--&lt;!&ndash;       viewBox="0 0 24 24"&ndash;&gt;-->
+<!--&lt;!&ndash;       stroke-width="2"&ndash;&gt;-->
+<!--&lt;!&ndash;       stroke="currentColor"&ndash;&gt;-->
+<!--&lt;!&ndash;       class="w-5 h-5">&ndash;&gt;-->
+<!--&lt;!&ndash;    <path stroke-linecap="round" stroke-linejoin="round"&ndash;&gt;-->
+<!--&lt;!&ndash;      d="M6 7h12M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m-7 0v12m4-12v12M5 7h14l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 7z"/>&ndash;&gt;-->
+<!--&lt;!&ndash;  </svg>&ndash;&gt;-->
+<!--&lt;!&ndash;</button>&ndash;&gt;-->
+
+
+<!--&lt;!&ndash;  &lt;!&ndash; UPDATE      (click)="updateTask(task.id)" &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash; <button&ndash;&gt;-->
+<!--&lt;!&ndash; (click)="editTask(task)"&ndash;&gt;-->
+<!--&lt;!&ndash;  class="flex items-center justify-center&ndash;&gt;-->
+<!--&lt;!&ndash;         w-10 h-10&ndash;&gt;-->
+<!--&lt;!&ndash;         bg-white hover:bg-blue-500&ndash;&gt;-->
+<!--&lt;!&ndash;         text-blue-500 hover:text-white&ndash;&gt;-->
+<!--&lt;!&ndash;         border-2 border-blue-500&ndash;&gt;-->
+<!--&lt;!&ndash;         rounded-full&ndash;&gt;-->
+<!--&lt;!&ndash;         shadow-sm hover:shadow-md&ndash;&gt;-->
+<!--&lt;!&ndash;         transition"&ndash;&gt;-->
+<!--&lt;!&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;  &lt;!&ndash; Icon edit &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;  <svg xmlns="http://www.w3.org/2000/svg"&ndash;&gt;-->
+<!--&lt;!&ndash;       fill="none"&ndash;&gt;-->
+<!--&lt;!&ndash;       viewBox="0 0 24 24"&ndash;&gt;-->
+<!--&lt;!&ndash;       stroke-width="2"&ndash;&gt;-->
+<!--&lt;!&ndash;       stroke="currentColor"&ndash;&gt;-->
+<!--&lt;!&ndash;       class="w-5 h-5">&ndash;&gt;-->
+<!--&lt;!&ndash;    <path stroke-linecap="round" stroke-linejoin="round"&ndash;&gt;-->
+<!--&lt;!&ndash;      d="M16.862 3.487a2.1 2.1 0 113 3L7.5 18.85 3 20l1.15-4.5 12.712-12.013z"/>&ndash;&gt;-->
+<!--&lt;!&ndash;  </svg>&ndash;&gt;-->
+<!--&lt;!&ndash;</button>&ndash;&gt;-->
+<!--&lt;!&ndash;&lt;!&ndash;Details&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;<button&ndash;&gt;-->
+<!--&lt;!&ndash;(click)="showTaskInfo(task)"&ndash;&gt;-->
+<!--&lt;!&ndash;  class="flex items-center justify-center&ndash;&gt;-->
+<!--&lt;!&ndash;         w-10 h-10&ndash;&gt;-->
+<!--&lt;!&ndash;         bg-white hover:bg-blue-500&ndash;&gt;-->
+<!--&lt;!&ndash;         text-blue-500 hover:text-white&ndash;&gt;-->
+<!--&lt;!&ndash;         border-2 border-blue-500&ndash;&gt;-->
+<!--&lt;!&ndash;         rounded-full&ndash;&gt;-->
+<!--&lt;!&ndash;         shadow-sm hover:shadow-md&ndash;&gt;-->
+<!--&lt;!&ndash;         transition"&ndash;&gt;-->
+<!--&lt;!&ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;  &lt;!&ndash; Info icon &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;  <svg xmlns="http://www.w3.org/2000/svg"&ndash;&gt;-->
+<!--&lt;!&ndash;       fill="none"&ndash;&gt;-->
+<!--&lt;!&ndash;       viewBox="0 0 24 24"&ndash;&gt;-->
+<!--&lt;!&ndash;       stroke-width="2"&ndash;&gt;-->
+<!--&lt;!&ndash;       stroke="currentColor"&ndash;&gt;-->
+<!--&lt;!&ndash;       class="w-5 h-5">&ndash;&gt;-->
+<!--&lt;!&ndash;    <path stroke-linecap="round" stroke-linejoin="round"&ndash;&gt;-->
+<!--&lt;!&ndash;      d="M11.25 9h1.5m-1.5 3h1.5m-.75-9a9 9 0 100 18 9 9 0 000-18z"/>&ndash;&gt;-->
+<!--&lt;!&ndash;  </svg>&ndash;&gt;-->
+<!--&lt;!&ndash;</button>&ndash;&gt;-->
+
+
+<!--&lt;!&ndash;</div>&ndash;&gt;-->
+
+
+<!--&lt;!&ndash;</li>&ndash;&gt;-->
+
+<!--&lt;!&ndash;      }&ndash;&gt;-->
+
+<!--&lt;!&ndash;      @empty {&ndash;&gt;-->
+<!--&lt;!&ndash;      <li class="text-center text-gray-400 py-8">&ndash;&gt;-->
+<!--&lt;!&ndash;        ✨ Aucune tâche pour le moment.&ndash;&gt;-->
+<!--&lt;!&ndash;      </li>&ndash;&gt;-->
+<!--&lt;!&ndash;      }&ndash;&gt;-->
+
+<!--&lt;!&ndash;    </ul>&ndash;&gt;-->
+
+<!--&lt;!&ndash;    &lt;!&ndash; PAGINATION RESPONSIVE &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;    <div *ngIf="totalPages > 1"&ndash;&gt;-->
+<!--&lt;!&ndash;         class="flex justify-center mt-8 sm:mt-10">&ndash;&gt;-->
+
+<!--&lt;!&ndash;      <nav class="flex flex-wrap items-center justify-center gap-2&ndash;&gt;-->
+<!--&lt;!&ndash;                  bg-gray-100 rounded-full p-2 shadow-inner">&ndash;&gt;-->
+
+<!--&lt;!&ndash;        &lt;!&ndash; Previous &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;        <button&ndash;&gt;-->
+<!--&lt;!&ndash;          (click)="changePage(currentPage - 1)"&ndash;&gt;-->
+<!--&lt;!&ndash;          [disabled]="currentPage === 1"&ndash;&gt;-->
+<!--&lt;!&ndash;          class="px-3 sm:px-4 py-2 rounded-full text-sm font-medium&ndash;&gt;-->
+<!--&lt;!&ndash;                 disabled:opacity-40&ndash;&gt;-->
+<!--&lt;!&ndash;                 hover:bg-white transition">&ndash;&gt;-->
+<!--&lt;!&ndash;          ←&ndash;&gt;-->
+<!--&lt;!&ndash;        </button>&ndash;&gt;-->
+
+<!--&lt;!&ndash;        &lt;!&ndash; Pages &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;        @for (page of pages; track page) {&ndash;&gt;-->
+<!--&lt;!&ndash;        <button&ndash;&gt;-->
+<!--&lt;!&ndash;          (click)="changePage(page)"&ndash;&gt;-->
+<!--&lt;!&ndash;          [class.bg-blue-600]="currentPage === page"&ndash;&gt;-->
+<!--&lt;!&ndash;          [class.text-white]="currentPage === page"&ndash;&gt;-->
+<!--&lt;!&ndash;          class="px-3 sm:px-4 py-2 rounded-full text-sm font-semibold&ndash;&gt;-->
+<!--&lt;!&ndash;                 transition hover:bg-white">&ndash;&gt;-->
+<!--&lt;!&ndash;        {{ page }}&ndash;&gt;-->
+<!--&lt;!&ndash;        </button>&ndash;&gt;-->
+<!--&lt;!&ndash;        }&ndash;&gt;-->
+
+<!--&lt;!&ndash;        &lt;!&ndash; Next &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;        <button&ndash;&gt;-->
+<!--&lt;!&ndash;          (click)="changePage(currentPage + 1)"&ndash;&gt;-->
+<!--&lt;!&ndash;          [disabled]="currentPage === totalPages"&ndash;&gt;-->
+<!--&lt;!&ndash;          class="px-3 sm:px-4 py-2 rounded-full text-sm font-medium&ndash;&gt;-->
+<!--&lt;!&ndash;                 disabled:opacity-40&ndash;&gt;-->
+<!--&lt;!&ndash;                 hover:bg-white transition">&ndash;&gt;-->
+<!--&lt;!&ndash;          →&ndash;&gt;-->
+<!--&lt;!&ndash;        </button>&ndash;&gt;-->
+
+<!--&lt;!&ndash;      </nav>&ndash;&gt;-->
+<!--&lt;!&ndash;    </div>&ndash;&gt;-->
+
+<!--&lt;!&ndash;  </div>&ndash;&gt;-->
+<!--&lt;!&ndash;</div>&ndash;&gt;-->
+
+
+<!--&lt;!&ndash; Modal confirmation &ndash;&gt;-->
+<!--<div *ngIf="showConfirmModal"-->
+<!--     class="fixed inset-0 flex items-center justify-center z-50">-->
+
+<!--  &lt;!&ndash; Overlay &ndash;&gt;-->
+<!--  <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm transition-opacity"></div>-->
+
+<!--  &lt;!&ndash; Modal box &ndash;&gt;-->
+<!--  <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-sm w-full mx-4 relative z-10 animate-fade-in">-->
+<!--    &lt;!&ndash; Icon Warning &ndash;&gt;-->
+<!--    <div class="flex justify-center mb-4">-->
+<!--      <svg class="w-12 h-12 text-red-500" fill="none" stroke="currentColor" stroke-width="2"-->
+<!--           viewBox="0 0 24 24">-->
+<!--        <path stroke-linecap="round" stroke-linejoin="round"-->
+<!--              d="M12 9v4m0 4h.01M5.07 19h13.86a2 2 0 002-2V7a2 2 0 00-2-2H5.07a2 2 0 00-2 2v10a2 2 0 002 2z"/>-->
+<!--      </svg>-->
+<!--    </div>-->
+
+<!--    &lt;!&ndash; Title &ndash;&gt;-->
+<!--    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 text-center mb-2">-->
+<!--      Confirmer la suppression-->
+<!--    </h2>-->
+
+<!--    &lt;!&ndash; Message &ndash;&gt;-->
+<!--    <p class="text-gray-600 text-center mb-6">-->
+<!--      Êtes-vous sûr de vouloir supprimer cette tâche ? Cette action est irréversible!-->
+<!--    </p>-->
+
+<!--    &lt;!&ndash; Buttons &ndash;&gt;-->
+<!--    <div class="flex justify-center gap-4">-->
+<!--      <button (click)="cancelDelete()"-->
+<!--              class="px-4 py-2 sm:px-5 sm:py-3 rounded-lg border border-gray-300 text-gray-700-->
+<!--               bg-white hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300-->
+<!--               transition font-semibold shadow-sm hover:shadow-md">-->
+<!--        NON-->
+<!--      </button>-->
+
+
+<!--      <button (click)="confirmDelete()"-->
+<!--              class="px-4 py-2 sm:px-5 sm:py-3 rounded-lg bg-red-500 text-white hover:bg-red-600 shadow-md hover:shadow-lg transition font-semibold flex items-center gap-2">-->
+<!--        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"-->
+<!--             viewBox="0 0 24 24">-->
+<!--          <path stroke-linecap="round" stroke-linejoin="round"-->
+<!--                d="M6 7h12M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2m-7 0v12m4-12v12M5 7h14l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 7z"/>-->
+<!--        </svg>-->
+<!--        OUI-->
+<!--      </button>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</div>-->
+<!--&lt;!&ndash; Toast notification &ndash;&gt;-->
+<!--<div *ngIf="showToast"-->
+<!--     class="fixed top-5  bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg-->
+<!--            flex items-center gap-2 animate-fade-in-out z-50">-->
+<!--  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">-->
+<!--    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>-->
+<!--  </svg>-->
+<!--  <span>{{ toastMessage }}</span>-->
+<!--</div>-->
+
+
+<!--&lt;!&ndash; Modal &ndash;&gt;-->
+<!--&lt;!&ndash; Overlay &ndash;&gt;-->
+<!--<div *ngIf="isInfoOpen"-->
+<!--     class="fixed inset-0 z-50 flex items-center justify-center-->
+<!--            bg-black/50 backdrop-blur-sm p-4">-->
+
+<!--  &lt;!&ndash; Modal &ndash;&gt;-->
+<!--  <div class="relative w-full max-w-md-->
+<!--              bg-white rounded-2xl shadow-xl-->
+<!--              p-6 space-y-5-->
+<!--              animate-[fadeIn_.2s_ease-out]">-->
+
+<!--    &lt;!&ndash; Header &ndash;&gt;-->
+<!--    <div class="flex items-center justify-between border-b pb-3">-->
+<!--      <h2 class="text-xl font-semibold text-gray-800">-->
+<!--        Task Details-->
+<!--      </h2>-->
+
+<!--      &lt;!&ndash; Close icon &ndash;&gt;-->
+<!--      <button (click)="closeInfo()"-->
+<!--              class="text-gray-400 hover:text-red-500 transition">-->
+<!--        ✕-->
+<!--      </button>-->
+<!--    </div>-->
+
+<!--    &lt;!&ndash; Content &ndash;&gt;-->
+<!--    <div class="space-y-3 text-sm">-->
+
+<!--      <div class="grid grid-cols-3 gap-2">-->
+<!--        <span class="font-medium text-gray-500">Title</span>-->
+<!--        <span class="col-span-2 text-gray-800">-->
+<!--          {{ selectedTask?.title }}-->
+<!--        </span>-->
+<!--      </div>-->
+
+<!--      <div class="grid grid-cols-3 gap-2">-->
+<!--        <span class="font-medium text-gray-500">Description</span>-->
+<!--        <span class="col-span-2 text-gray-800">-->
+<!--          {{ selectedTask?.description }}-->
+<!--        </span>-->
+<!--      </div>-->
+
+<!--      <div class="grid grid-cols-3 gap-2">-->
+<!--        <span class="font-medium text-gray-500">Status</span>-->
+
+<!--        <span class="col-span-2">-->
+<!--    <span class="px-2 py-1 rounded-full text-xs font-medium"-->
+<!--          [ngClass]="selectedTask?.completed-->
+<!--                     ? 'bg-green-100 text-green-700'-->
+<!--                     : 'bg-yellow-100 text-yellow-700'">-->
+
+<!--      {{ selectedTask?.completed ? 'Terminée' : 'En cours' }}-->
+
+<!--    </span>-->
+<!--  </span>-->
+<!--      </div>-->
+
+<!--      &lt;!&ndash; Footer &ndash;&gt;-->
+<!--      <div class="flex justify-end pt-4 border-t">-->
+<!--        <button-->
+<!--          (click)="closeInfo()"-->
+<!--          class="px-4 py-2 rounded-lg-->
+<!--               bg-gray-100 hover:bg-gray-200-->
+<!--               text-gray-700 font-medium-->
+<!--               transition">-->
+<!--          Close-->
+<!--        </button>-->
+<!--      </div>-->
+
+<!--    </div>-->
+<!--  </div>-->
+<!--</div>-->
+
+<!--  &lt;!&ndash; Update Task Modal &ndash;&gt;-->
+<!--  <div *ngIf="showEditModal" class="fixed inset-0 flex items-center justify-center z-50 px-4 sm:px-6">-->
+<!--    &lt;!&ndash; Overlay &ndash;&gt;-->
+<!--    <div class="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm transition-opacity"></div>-->
+
+<!--    &lt;!&ndash; Modal Box &ndash;&gt;-->
+<!--    <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-sm sm:max-w-md w-full relative z-10 animate-fade-in">-->
+
+<!--      &lt;!&ndash; Header &ndash;&gt;-->
+<!--      <div class="flex flex-col items-center mb-4">-->
+<!--        <div class="w-12 h-12 flex items-center justify-center rounded-full bg-blue-100 mb-3">-->
+<!--          &lt;!&ndash; Icon edit &ndash;&gt;-->
+<!--          <svg xmlns="http://www.w3.org/2000/svg"-->
+<!--               fill="none"-->
+<!--               viewBox="0 0 24 24"-->
+<!--               stroke-width="2"-->
+<!--               stroke="currentColor"-->
+<!--               class="w-6 h-6 text-blue-500">-->
+<!--            <path stroke-linecap="round" stroke-linejoin="round"-->
+<!--                  d="M16.862 3.487a2.1 2.1 0 113 3L7.5 18.85 3 20l1.15-4.5 12.712-12.013z"/>-->
+<!--          </svg>-->
+<!--        </div>-->
+<!--        <h2 class="text-xl sm:text-2xl font-bold text-gray-800 text-center">Modifier la tâche</h2>-->
+<!--      </div>-->
+
+<!--      &lt;!&ndash; Body &ndash;&gt;-->
+<!--      <div class="flex flex-col gap-3" *ngIf="taskBeingEdited">-->
+<!--        <input [(ngModel)]="taskBeingEdited.title"-->
+<!--               placeholder="Titre"-->
+<!--               class="p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none w-full transition"/>-->
+
+<!--        <textarea [(ngModel)]="taskBeingEdited.description"-->
+<!--                  placeholder="Description"-->
+<!--                  class="p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none w-full transition resize-none"></textarea>-->
+<!--      </div>-->
+
+<!--      &lt;!&ndash; Footer Buttons &ndash;&gt;-->
+<!--      <div class="flex justify-center gap-4 mt-6">-->
+<!--        <button (click)="showEditModal=false"-->
+<!--                class="px-4 py-2 sm:px-5 sm:py-3 rounded-lg border border-gray-300 text-gray-700-->
+<!--                     bg-white hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300-->
+<!--                     transition font-semibold shadow-sm hover:shadow-md w-full sm:w-auto">-->
+<!--          Annuler-->
+<!--        </button>-->
+
+<!--        <button (click)="confirmUpdate()"-->
+<!--                class="px-4 py-2 sm:px-5 sm:py-3 rounded-lg bg-blue-500 text-white-->
+<!--                     hover:bg-blue-600 shadow-md hover:shadow-lg transition font-semibold flex items-center gap-2 w-full sm:w-auto">-->
+<!--          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">-->
+<!--            <path stroke-linecap="round" stroke-linejoin="round"-->
+<!--                  d="M5 13l4 4L19 7"/>-->
+<!--          </svg>-->
+<!--          Sauvegarder-->
+<!--        </button>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--  </div>-->
+

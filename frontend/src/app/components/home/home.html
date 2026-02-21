@@ -1,0 +1,89 @@
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+
+  <!-- Titre -->
+  <h1 class="text-3xl font-bold text-gray-800 mb-8">
+    👋 Bienvenue !
+  </h1>
+
+  <!-- Cartes statistiques -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+
+    <div class="bg-white p-6 rounded-2xl shadow-sm">
+      <p class="text-gray-500 text-sm">Total Tâches</p>
+      <h2 class="text-2xl font-bold text-blue-600 mt-2">
+        {{ totalTasks }}
+      </h2>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-sm">
+      <p class="text-gray-500 text-sm">Terminées</p>
+      <h2 class="text-2xl font-bold text-green-600 mt-2">
+        {{ completedTasks }}
+      </h2>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-sm">
+      <p class="text-gray-500 text-sm">En cours</p>
+      <h2 class="text-2xl font-bold text-orange-500 mt-2">
+        {{ pendingTasks }}
+      </h2>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-sm">
+      <p class="text-gray-500 text-sm">Progression</p>
+      <h2 class="text-2xl font-bold text-purple-600 mt-2">
+        {{ progress }}%
+      </h2>
+    </div>
+
+  </div>
+
+  <!-- Barre de progression -->
+  <div class="bg-white p-6 rounded-2xl shadow-sm mb-10">
+    <h2 class="text-lg font-semibold text-gray-700 mb-4">
+      📊 Progression globale
+    </h2>
+
+    <div class="w-full bg-gray-200 rounded-full h-4">
+      <div
+        class="bg-green-500 h-4 rounded-full transition-all duration-500"
+        [style.width.%]="progress">
+      </div>
+    </div>
+  </div>
+
+  <!-- Dernières tâches -->
+  <div class="bg-white p-6 rounded-2xl shadow-sm">
+    <h2 class="text-lg font-semibold text-gray-700 mb-4">
+      🕒 Dernières tâches
+    </h2>
+
+    <ul class="divide-y divide-gray-200">
+
+      @for (task of recentTasks; track task.id) {
+      <li class="py-3 flex justify-between items-center">
+
+        <span class="font-medium text-gray-800">
+      {{ task.title }}
+      </span>
+
+      <span
+        [class.text-green-600]="task.completed"
+        [class.text-orange-500]="!task.completed"
+        class="text-sm font-semibold">
+      {{ task.completed ? 'Terminée' : 'En cours' }}
+      </span>
+
+    </li>
+      }
+
+      @empty {
+      <li class="py-4 text-gray-400 text-center">
+        Aucune tâche disponible
+      </li>
+      }
+
+    </ul>
+  </div>
+
+</div>
