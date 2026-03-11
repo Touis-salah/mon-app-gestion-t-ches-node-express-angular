@@ -21,6 +21,13 @@ db.serialize(() => {
             completed INTEGER DEFAULT 0
         )
     `);
+    db.run(`
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL
+    )
+`);
 });
 
 module.exports = db;

@@ -14,25 +14,6 @@ const Task = {
         });
     },
 
-    // create: ({ title, description }, callback) => {
-    //     db.run(
-    //         "INSERT INTO tasks (title, description) VALUES (?, ?)",
-    //         [title, description],
-    //         function (err) {
-    //
-    //             if (err) return callback(err);
-    //
-    //             // récupérer la tâche avec created_at
-    //             db.get(
-    //                 "SELECT * FROM tasks WHERE id = ?",
-    //                 [this.lastID],
-    //                 (err, row) => {
-    //                     callback(err, row);
-    //                 }
-    //             );
-    //         }
-    //     );
-    // },
     create: ({title, description}, callback) => {
         db.run(
             "INSERT INTO tasks (title, description) VALUES (?, ?)",
