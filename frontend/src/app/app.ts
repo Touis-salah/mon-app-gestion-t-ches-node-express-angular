@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import {Sidebar} from './components/sidebar/sidebar';
 
 @Component({
   selector: 'app-root',
@@ -9,7 +10,8 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
     CommonModule,
     RouterOutlet,
     RouterLink,
-    RouterLinkActive
+    RouterLinkActive,
+    Sidebar
   ],
   templateUrl: './app.html',
   styleUrl: './app.css'
@@ -25,6 +27,11 @@ export class App {
   toggleSidebar() {
     this.isSidebarOpen = !this.isSidebarOpen;
   }
+
+  handleSidebarToggle() {
+    this.isSidebarOpen = !this.isSidebarOpen;
+  }
+
 }
 
 // import { Component, signal } from '@angular/core';

@@ -1,0 +1,113 @@
+<!--&lt;!&ndash; Overlay mobile &ndash;&gt;-->
+<!--<div-->
+<!--  *ngIf="isSidebarOpen"-->
+<!--  (click)="toggleSidebar()"-->
+<!--  class="fixed inset-0 bg-black/40 z-40 lg:hidden">-->
+<!--</div>-->
+
+<!--&lt;!&ndash; Sidebar &ndash;&gt;-->
+<!--<aside-->
+<!--  class="fixed z-50 top-0 left-0 h-full w-64 bg-white shadow-lg p-5 flex flex-col-->
+<!--         transform transition-transform duration-300 lg:translate-x-0"-->
+<!--  [class.-translate-x-full]="!isSidebarOpen"-->
+<!--&gt;-->
+<!--  <h1 class="text-2xl font-bold text-blue-600 mb-8">-->
+<!--    📝 Task Manager-->
+<!--  </h1>-->
+
+<!--  <nav class="flex flex-col gap-3">-->
+<!--    <a routerLink="" (click)="toggleSidebar()" routerLinkActive="bg-blue-500 text-white"-->
+<!--       class="px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-500 hover:text-white transition">-->
+<!--      Accueil-->
+<!--    </a>-->
+<!--    <a routerLink="/tasks" (click)="toggleSidebar()" routerLinkActive="bg-blue-500 text-white"-->
+<!--       class="px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-500 hover:text-white transition">-->
+<!--      Tâches-->
+<!--    </a>-->
+<!--  </nav>-->
+
+<!--  &lt;!&ndash; User info + logout &ndash;&gt;-->
+<!--  <div class="mt-auto pt-6 border-t border-gray-200">-->
+<!--&lt;!&ndash;    <p class="text-gray-700 font-medium mb-2">Bonjour, {{ username }}</p>&ndash;&gt;-->
+<!--    <button (click)="logout()"-->
+<!--            class="w-full px-4 py-2 bg-red-500 text-white rounded-xl shadow hover:bg-red-600 transition">-->
+<!--      Logout-->
+<!--    </button>-->
+<!--  </div>-->
+<!--</aside>-->
+<div class="min-h-screen flex bg-gradient-to-br from-blue-50 to-indigo-100">
+
+  <!-- Overlay (mobile) -->
+  <div
+    *ngIf="isSidebarOpen"
+    (click)="toggleSidebar()"
+    class="fixed inset-0 bg-black/40 z-40 lg:hidden">
+  </div>
+
+  <!-- Sidebar -->
+  <aside
+    class="fixed z-50 top-0 left-0 h-full w-64 bg-white shadow-lg p-5 flex flex-col
+           transform transition-transform duration-300 lg:translate-x-0"
+    [class.-translate-x-full]="!isSidebarOpen">
+
+    <h1 class="text-2xl font-bold text-blue-600 mb-8">
+      📝 Task Manager
+    </h1>
+
+    <nav class="flex flex-col gap-3">
+      <a routerLink="/" (click)="toggleSidebar()" routerLinkActive="bg-blue-500 text-white"
+         class="px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-500 hover:text-white transition">
+        Accueil
+      </a>
+      <a routerLink="/tasks" (click)="toggleSidebar()" routerLinkActive="bg-blue-500 text-white"
+         class="px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-500 hover:text-white transition">
+        Tâches
+      </a>
+    </nav>
+
+    <!-- User info + logout -->
+    <div  class="mt-auto pt-6 border-t border-gray-200">
+
+      <button (click)="logout()"
+              class="w-full px-4 py-2 bg-red-500 text-white rounded-xl shadow hover:bg-red-600 transition">
+        Logout
+      </button>
+    </div>
+
+  </aside>
+
+  <!-- Main content -->
+  <div class="flex-1 flex flex-col lg:ml-64">
+
+    <!-- Topbar (mobile) -->
+    <header class="lg:hidden bg-white shadow-md p-4 flex items-center justify-between">
+
+      <button (click)="toggleSidebar()" class="text-gray-700">
+        <svg xmlns="http://www.w3.org/2000/svg"
+             fill="none"
+             viewBox="0 0 24 24"
+             stroke-width="2"
+             stroke="currentColor"
+             class="w-6 h-6">
+          <path stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+
+      <h2 class="font-semibold text-gray-800">
+        Task Manager
+      </h2>
+
+      <!-- User info + logout topbar mobile -->
+      <div class="flex items-center gap-2">
+        <button (click)="logout()" class="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition">
+          Logout
+        </button>
+      </div>
+
+    </header>
+
+
+  </div>
+</div>

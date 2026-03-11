@@ -1,0 +1,40 @@
+<div class="min-h-screen flex items-center justify-center bg-gray-100">
+  <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
+    <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Connexion</h2>
+
+    <form (submit)="login(); $event.preventDefault()" class="flex flex-col gap-4">
+      <!-- Nom d'utilisateur -->
+      <input
+        [(ngModel)]="username"
+        name="username"
+        type="text"
+        placeholder="Nom d'utilisateur"
+        class="p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none w-full transition"
+        required
+      />
+
+      <!-- Mot de passe -->
+      <input
+        [(ngModel)]="password"
+        name="password"
+        type="password"
+        placeholder="Mot de passe"
+        class="p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none w-full transition"
+        required
+      />
+
+      <!-- Bouton -->
+      <button
+        type="submit"
+        class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-green-500 text-white font-semibold rounded-xl shadow hover:bg-green-600 hover:shadow-md transition"
+      >
+        Se connecter
+      </button>
+
+      <!-- Message d'erreur -->
+      <div *ngIf="errorMessage" class="text-red-500 text-sm mt-2 text-center">
+        {{ errorMessage }}
+      </div>
+    </form>
+  </div>
+</div>
